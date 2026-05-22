@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.94
+          toolchain: 1.95
       - run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/icarus_models_deploy_key
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.94
+          toolchain: 1.95
       # --- Add this step for explicit verification ---
       - name: Verify Docker Environment
         run: |
@@ -95,7 +95,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.94
+          toolchain: 1.95
       - run: rustup component add rustfmt
       - run: |
           mkdir -p ~/.ssh
@@ -114,7 +114,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.94
+          toolchain: 1.95
       - run: rustup component add clippy
       - run: |
           mkdir -p ~/.ssh
@@ -133,7 +133,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.94
+          toolchain: 1.95
       - run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/icarus_models_deploy_key

@@ -28,7 +28,7 @@ services:
       POSTGRES_DB: ${POSTGRES_AUTH_DB:-icarus_auth_db}
     volumes:
       # Persist database data using a named volume
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     ports: []
     healthcheck:
         # Checks if Postgres is ready to accept connections

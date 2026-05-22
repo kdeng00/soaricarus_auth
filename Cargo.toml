@@ -1,28 +1,28 @@
 [package]
 name = "icarus_auth"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2024"
-rust-version = "1.94"
+rust-version = "1.95"
 
 [dependencies]
-axum = { version = "0.8.8" }
+axum = { version = "0.8.9" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.149" }
-tokio = { version = "1.51", features = ["rt-multi-thread"] }
+tokio = { version = "1.52.2", features = ["rt-multi-thread"] }
 tracing-subscriber = { version = "0.3.23" }
 tower = { version = "0.5.3", features = ["full"] }
-tower-http = { version = "0.6.8", features = ["cors"] }
+tower-http = { version = "0.6.10", features = ["cors"] }
 hyper = { version = "1.9.0" }
 sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-native-tls", "time", "uuid"] }
-uuid = { version = "1.23", features = ["v4", "serde"] }
+uuid = { version = "1.23.1", features = ["v4", "serde"] }
 argon2 = { version = "0.5.3", features = ["std"] } # Use the latest 0.5.x version
-rand = { version = "0.10.0" }
+rand = { version = "0.10.1" }
 time = { version = "0.3.47", features = ["macros", "serde"] }
 josekit = { version = "0.10.3" }
-utoipa = { version = "5.4.0", features = ["axum_extras"] }
+utoipa = { version = "5.5.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
-icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.10.0" }
-icarus_envy = { git = "ssh://git@git.kundeng.us/phoenix/icarus_envy.git", tag = "v0.6.0" }
+icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.11.1" }
+icarus_envy = { git = "ssh://git@git.kundeng.us/phoenix/icarus_envy.git", tag = "v0.7.0" }
 
 [dev-dependencies]
 http-body-util = { version = "0.1.3" }
