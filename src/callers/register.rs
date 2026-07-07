@@ -144,7 +144,7 @@ pub async fn register_user(
 /// Checks to see if registration is enabled
 async fn is_registration_enabled() -> Result<bool, std::io::Error> {
     let key = String::from("ENABLE_REGISTRATION");
-    let var = icarus_envy::environment::get_env(&key).await;
+    let var = icarus_envy::environment::get_env(&key);
     let parsed_value = var.value.to_uppercase();
 
     if parsed_value == "TRUE" {

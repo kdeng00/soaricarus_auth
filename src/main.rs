@@ -69,7 +69,7 @@ mod init {
             // Dynamically set the allowed origin based on the environment
             match std::env::var(icarus_envy::keys::APP_ENV).as_deref() {
                 Ok("production") => {
-                    let allowed_origins_env = icarus_envy::environment::get_allowed_origins().await;
+                    let allowed_origins_env = icarus_envy::environment::get_allowed_origins();
                     match icarus_envy::utility::delimitize(&allowed_origins_env) {
                         Ok(alwd) => {
                             let allowed_origins: Vec<axum::http::HeaderValue> = alwd
@@ -162,7 +162,7 @@ mod tests {
         pub const LIMIT: usize = 6;
 
         pub async fn get_pool() -> Result<sqlx::PgPool, sqlx::Error> {
-            let tm_db_url = icarus_envy::environment::get_db_url().await.value;
+            let tm_db_url = icarus_envy::environment::get_db_url().value;
             let tm_options = sqlx::postgres::PgConnectOptions::from_str(&tm_db_url).unwrap();
             sqlx::PgPool::connect_with(tm_options).await
         }
@@ -175,7 +175,7 @@ mod tests {
         }
 
         pub async fn connect_to_db(db_name: &str) -> Result<sqlx::PgPool, sqlx::Error> {
-            let db_url = icarus_envy::environment::get_db_url().await.value;
+            let db_url = icarus_envy::environment::get_db_url().value;
             let options = sqlx::postgres::PgConnectOptions::from_str(&db_url)?.database(db_name);
             sqlx::PgPool::connect_with(options).await
         }
@@ -185,7 +185,10 @@ mod tests {
             db_name: &str,
         ) -> Result<(), sqlx::Error> {
             let create_query = format!("CREATE DATABASE {}", db_name);
-            match sqlx::query(&create_query).execute(template_pool).await {
+            match sqlx::query(sqlx::AssertSqlSafe(create_query))
+                .execute(template_pool)
+                .await
+            {
                 Ok(_) => Ok(()),
                 Err(e) => Err(e),
             }
@@ -197,12 +200,14 @@ mod tests {
             db_name: &str,
         ) -> Result<(), sqlx::Error> {
             let drop_query = format!("DROP DATABASE IF EXISTS {} WITH (FORCE)", db_name);
-            sqlx::query(&drop_query).execute(template_pool).await?;
+            sqlx::query(sqlx::AssertSqlSafe(drop_query))
+                .execute(template_pool)
+                .await?;
             Ok(())
         }
 
         pub async fn get_database_name() -> Result<String, Box<dyn std::error::Error>> {
-            let database_url = icarus_envy::environment::get_db_url().await.value;
+            let database_url = icarus_envy::environment::get_db_url().value;
 
             let parsed_url = url::Url::parse(&database_url)?;
             if parsed_url.scheme() == "postgres" || parsed_url.scheme() == "postgresql" {
@@ -503,7 +508,7 @@ mod tests {
 
         let app = init::routes().await.layer(axum::Extension(pool));
         let id = uuid::Uuid::parse_str("22f9c775-cce9-457a-a147-9dafbb801f61").unwrap();
-        let key = icarus_envy::environment::get_secret_key().await.value;
+        let key = icarus_envy::environment::get_secret_key().value;
 
         match token_stuff::create_service_token(&key, &id) {
             Ok((token, _expire)) => {

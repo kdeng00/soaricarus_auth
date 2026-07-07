@@ -92,7 +92,7 @@ pub mod endpoint {
             Ok(user) => {
                 if hashing::verify_password(&payload.password, user.password.clone()).unwrap() {
                     // Create token
-                    let key = icarus_envy::environment::get_secret_key().await.value;
+                    let key = icarus_envy::environment::get_secret_key().value;
                     let (token_literal, duration) =
                         token_stuff::create_token(&key, &user.id).unwrap();
 
@@ -151,7 +151,7 @@ pub mod endpoint {
 
         match repo::service::valid_passphrase(&pool, &payload.passphrase).await {
             Ok((id, username, _date_created)) => {
-                let key = icarus_envy::environment::get_secret_key().await.value;
+                let key = icarus_envy::environment::get_secret_key().value;
                 let (token_literal, duration) =
                     token_stuff::create_service_token(&key, &id).unwrap();
 
@@ -203,7 +203,7 @@ pub mod endpoint {
         axum::Json<response::refresh_token::Response>,
     ) {
         let mut response = response::refresh_token::Response::default();
-        let key = icarus_envy::environment::get_secret_key().await.value;
+        let key = icarus_envy::environment::get_secret_key().value;
 
         if token_stuff::verify_token(&key, &payload.access_token) {
             let token_type = token_stuff::get_token_type(&key, &payload.access_token).unwrap();
