@@ -1,33 +1,28 @@
 version: '3.8' # Use a recent version
 
 services:
-  # Your Rust Application Service
   auth_api:
-    build: # Tells docker-compose to build the Dockerfile in the current directory
+    build:
       context: .
-      ssh: ["default"]  # Uses host's SSH agent
-    container_name: icarus_auth # Optional: Give the container a specific name
+      ssh: ["default"]
+    container_name: icarus_auth
     ports:
-      # Map host port 8000 to container port 3000 (adjust as needed)
       - "8001:8001"
     env_file:
       - .env
     depends_on:
       auth_db:
-        condition: service_healthy # Wait for the DB to be healthy before starting the app
-    restart: unless-stopped # Optional: Restart policy
+        condition: service_healthy
+    restart: unless-stopped
 
-  # PostgreSQL Database Service
   auth_db:
-    image: postgres:18.3-alpine # Use an official Postgres image (Alpine variant is smaller)
-    container_name: icarus_auth_db # Optional: Give the container a specific name
+    image: postgres:18.4-alpine
+    container_name: icarus_auth_db
     environment:
-      # These MUST match the user, password, and database name in the DATABASE_URL above
       POSTGRES_USER: ${POSTGRES_AUTH_USER:-icarus_op}
       POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_AUTH_DB:-icarus_auth_db}
     volumes:
-      # Persist database data using a named volume
       - postgres_data:/var/lib/postgresql
     ports: []
     healthcheck:
@@ -37,9 +32,8 @@ services:
         timeout: 5s
         retries: 5
         start_period: 10s
-    restart: always # Optional: Restart policy
+    restart: always
 
-# Define the named volume for data persistence
 volumes:
   postgres_data:
     driver: local # Use the default local driver

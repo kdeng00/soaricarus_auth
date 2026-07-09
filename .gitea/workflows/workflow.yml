@@ -1,14 +1,12 @@
-name: Rust Build
+name: icarus_auth Build
 
 on:
   push:
     branches:
       - main 
-      - devel
   pull_request:
     branches:
       - main 
-      - devel
 
 jobs:
   check:
@@ -34,16 +32,13 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-24.04
-    # --- Add database service definition ---
     services:
       postgres:
-        image: postgres:18.3-alpine
+        image: postgres:18.4-alpine
         env:
-          # Use secrets for DB init, with fallbacks for flexibility
           POSTGRES_USER: ${{ secrets.DB_TEST_USER || 'testuser' }}
           POSTGRES_PASSWORD: ${{ secrets.DB_TEST_PASSWORD || 'testpassword' }}
           POSTGRES_DB: ${{ secrets.DB_TEST_NAME || 'testdb' }}
-        # Options to wait until the database is ready
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -56,7 +51,6 @@ jobs:
         with:
           toolchain: 1.96.1
       - uses: Swatinem/rust-cache@v2
-      # --- Add this step for explicit verification ---
       - name: Verify Docker Environment
         run: |
           echo "Runner User Info:"
@@ -68,15 +62,12 @@ jobs:
           echo "Checking Docker Daemon Status (ps):"
           docker ps -a
           echo "Docker environment check complete."
-        # NOTE: Do NOT use continue-on-error here.
-        # If Docker isn't working as expected, the job SHOULD fail here.
       - name: Run tests
         env:
           # Define DATABASE_URL for tests to use
           DATABASE_URL: postgresql://${{ secrets.DB_TEST_USER || 'testuser' }}:${{ secrets.DB_TEST_PASSWORD || 'testpassword' }}@postgres:5432/${{ secrets.DB_TEST_NAME || 'testdb' }}
           RUST_LOG: info # Optional: configure test log level
           SECRET_KEY: ${{ secrets.TOKEN_SECRET_KEY }}
-          # Make SSH agent available if tests fetch private dependencies
           SSH_AUTH_SOCK: ${{ env.SSH_AUTH_SOCK }}
           ENABLE_REGISTRATION: 'TRUE'
         run: |
