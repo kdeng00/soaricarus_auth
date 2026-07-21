@@ -1,4 +1,4 @@
-name: icarus_auth Build
+name: soaricarus_auth Build
 
 on:
   push:
@@ -16,16 +16,16 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.96.1
+          toolchain: 1.97
       - uses: Swatinem/rust-cache@v2
       - run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/icarus_models_deploy_key
-          chmod 600 ~/.ssh/icarus_models_deploy_key
+          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/soaricarus_models_deploy_key
+          chmod 600 ~/.ssh/soaricarus_models_deploy_key
           ssh-keyscan ${{ vars.MYHOST }} >> ~/.ssh/known_hosts
 
           eval $(ssh-agent -s)
-          ssh-add -v ~/.ssh/icarus_models_deploy_key
+          ssh-add -v ~/.ssh/soaricarus_models_deploy_key
 
           cargo check
 
@@ -49,7 +49,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.96.1
+          toolchain: 1.97
       - uses: Swatinem/rust-cache@v2
       - name: Verify Docker Environment
         run: |
@@ -72,12 +72,12 @@ jobs:
           ENABLE_REGISTRATION: 'TRUE'
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/icarus_models_deploy_key
-          chmod 600 ~/.ssh/icarus_models_deploy_key
+          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/soaricarus_models_deploy_key
+          chmod 600 ~/.ssh/soaricarus_models_deploy_key
           ssh-keyscan ${{ vars.MYHOST }} >> ~/.ssh/known_hosts
 
           eval $(ssh-agent -s)
-          ssh-add -v ~/.ssh/icarus_models_deploy_key
+          ssh-add -v ~/.ssh/soaricarus_models_deploy_key
 
           cargo test
 
@@ -88,17 +88,17 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.96.1
+          toolchain: 1.97
       - uses: Swatinem/rust-cache@v2
       - run: rustup component add rustfmt
       - run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/icarus_models_deploy_key
-          chmod 600 ~/.ssh/icarus_models_deploy_key
+          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/soaricarus_models_deploy_key
+          chmod 600 ~/.ssh/soaricarus_models_deploy_key
           ssh-keyscan ${{ vars.MYHOST }} >> ~/.ssh/known_hosts
 
           eval $(ssh-agent -s)
-          ssh-add -v ~/.ssh/icarus_models_deploy_key
+          ssh-add -v ~/.ssh/soaricarus_models_deploy_key
           cargo fmt --all -- --check
 
   clippy:
@@ -108,17 +108,17 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.96.1
+          toolchain: 1.97
       - uses: Swatinem/rust-cache@v2
       - run: rustup component add clippy
       - run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/icarus_models_deploy_key
-          chmod 600 ~/.ssh/icarus_models_deploy_key
+          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/soaricarus_models_deploy_key
+          chmod 600 ~/.ssh/soaricarus_models_deploy_key
           ssh-keyscan ${{ vars.MYHOST }} >> ~/.ssh/known_hosts
 
           eval $(ssh-agent -s)
-          ssh-add -v ~/.ssh/icarus_models_deploy_key
+          ssh-add -v ~/.ssh/soaricarus_models_deploy_key
           cargo clippy -- -D warnings
 
   build:
@@ -128,14 +128,14 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: 1.96.1
+          toolchain: 1.97
       - uses: Swatinem/rust-cache@v2
       - run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/icarus_models_deploy_key
-          chmod 600 ~/.ssh/icarus_models_deploy_key
+          echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/soaricarus_models_deploy_key
+          chmod 600 ~/.ssh/soaricarus_models_deploy_key
           ssh-keyscan ${{ vars.MYHOST }} >> ~/.ssh/known_hosts
 
           eval $(ssh-agent -s)
-          ssh-add -v ~/.ssh/icarus_models_deploy_key
+          ssh-add -v ~/.ssh/soaricarus_models_deploy_key
           cargo build --release

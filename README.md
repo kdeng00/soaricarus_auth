@@ -1,4 +1,5 @@
-A auth web API services for the Icarus project.
+# soaricarus_auth
+A auth web API services for the soaricarus project.
 
 
 # Getting Started

@@ -28,14 +28,14 @@ pub mod response {
     #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
     pub struct Response {
         pub message: String,
-        pub data: Vec<icarus_models::login_result::LoginResult>,
+        pub data: Vec<simodels::login_result::LoginResult>,
     }
 
     pub mod service_login {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<icarus_models::login_result::LoginResult>,
+            pub data: Vec<simodels::login_result::LoginResult>,
         }
     }
 
@@ -43,7 +43,7 @@ pub mod response {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<icarus_models::login_result::LoginResult>,
+            pub data: Vec<simodels::login_result::LoginResult>,
         }
     }
 }
@@ -92,7 +92,7 @@ pub mod endpoint {
             Ok(user) => {
                 if hashing::verify_password(&payload.password, user.password.clone()).unwrap() {
                     // Create token
-                    let key = icarus_envy::environment::get_secret_key().value;
+                    let key = sienvy::environment::get_secret_key().value;
                     let (token_literal, duration) =
                         token_stuff::create_token(&key, &user.id).unwrap();
 
@@ -104,11 +104,11 @@ pub mod endpoint {
                             StatusCode::OK,
                             Json(response::Response {
                                 message: String::from("Successful"),
-                                data: vec![icarus_models::login_result::LoginResult {
+                                data: vec![simodels::login_result::LoginResult {
                                     id: user.id,
                                     username: user.username.clone(),
                                     token: token_literal,
-                                    token_type: String::from(icarus_models::token::TOKEN_TYPE),
+                                    token_type: String::from(simodels::token::TOKEN_TYPE),
                                     expiration: duration,
                                 }],
                             }),
@@ -151,16 +151,16 @@ pub mod endpoint {
 
         match repo::service::valid_passphrase(&pool, &payload.passphrase).await {
             Ok((id, username, _date_created)) => {
-                let key = icarus_envy::environment::get_secret_key().value;
+                let key = sienvy::environment::get_secret_key().value;
                 let (token_literal, duration) =
                     token_stuff::create_service_token(&key, &id).unwrap();
 
                 if token_stuff::verify_token(&key, &token_literal) {
-                    let login_result = icarus_models::login_result::LoginResult {
+                    let login_result = simodels::login_result::LoginResult {
                         id,
                         username,
                         token: token_literal,
-                        token_type: String::from(icarus_models::token::TOKEN_TYPE),
+                        token_type: String::from(simodels::token::TOKEN_TYPE),
                         expiration: duration,
                     };
 
@@ -203,7 +203,7 @@ pub mod endpoint {
         axum::Json<response::refresh_token::Response>,
     ) {
         let mut response = response::refresh_token::Response::default();
-        let key = icarus_envy::environment::get_secret_key().value;
+        let key = sienvy::environment::get_secret_key().value;
 
         if token_stuff::verify_token(&key, &payload.access_token) {
             let token_type = token_stuff::get_token_type(&key, &payload.access_token).unwrap();
@@ -215,11 +215,11 @@ pub mod endpoint {
                         Ok((username, _, _)) => {
                             match token_stuff::create_service_refresh_token(&key, &id) {
                                 Ok((access_token, exp_dur)) => {
-                                    let login_result = icarus_models::login_result::LoginResult {
+                                    let login_result = simodels::login_result::LoginResult {
                                         id,
                                         token: access_token,
                                         expiration: exp_dur,
-                                        token_type: String::from(icarus_models::token::TOKEN_TYPE),
+                                        token_type: String::from(simodels::token::TOKEN_TYPE),
                                         username,
                                     };
                                     response.message = String::from("Successful");

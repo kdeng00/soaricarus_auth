@@ -44,7 +44,7 @@ mod init {
                 register_responses::Response,
             login_responses::Response, login_responses::service_login::Response, login_responses::refresh_token::Response)),
         tags(
-            (name = "Icarus Auth API", description = "Auth API for Icarus API")
+            (name = "soaricarus Auth API", description = "Auth API for soaricarus API")
             )
     )]
     struct ApiDoc;
@@ -67,10 +67,10 @@ mod init {
                 .max_age(std::time::Duration::from_secs(3600)); // Cache the preflight response for 1 hour:cite[2]
 
             // Dynamically set the allowed origin based on the environment
-            match std::env::var(icarus_envy::keys::APP_ENV).as_deref() {
+            match std::env::var(sienvy::keys::APP_ENV).as_deref() {
                 Ok("production") => {
-                    let allowed_origins_env = icarus_envy::environment::get_allowed_origins();
-                    match icarus_envy::utility::delimitize(&allowed_origins_env) {
+                    let allowed_origins_env = sienvy::environment::get_allowed_origins();
+                    match sienvy::utility::delimitize(&allowed_origins_env) {
                         Ok(alwd) => {
                             let allowed_origins: Vec<axum::http::HeaderValue> = alwd
                                 .into_iter()
@@ -162,7 +162,7 @@ mod tests {
         pub const LIMIT: usize = 6;
 
         pub async fn get_pool() -> Result<sqlx::PgPool, sqlx::Error> {
-            let tm_db_url = icarus_envy::environment::get_db_url().value;
+            let tm_db_url = sienvy::environment::get_db_url().value;
             let tm_options = sqlx::postgres::PgConnectOptions::from_str(&tm_db_url).unwrap();
             sqlx::PgPool::connect_with(tm_options).await
         }
@@ -175,7 +175,7 @@ mod tests {
         }
 
         pub async fn connect_to_db(db_name: &str) -> Result<sqlx::PgPool, sqlx::Error> {
-            let db_url = icarus_envy::environment::get_db_url().value;
+            let db_url = sienvy::environment::get_db_url().value;
             let options = sqlx::postgres::PgConnectOptions::from_str(&db_url)?.database(db_name);
             sqlx::PgPool::connect_with(options).await
         }
@@ -207,7 +207,7 @@ mod tests {
         }
 
         pub async fn get_database_name() -> Result<String, Box<dyn std::error::Error>> {
-            let database_url = icarus_envy::environment::get_db_url().value;
+            let database_url = sienvy::environment::get_db_url().value;
 
             let parsed_url = url::Url::parse(&database_url)?;
             if parsed_url.scheme() == "postgres" || parsed_url.scheme() == "postgresql" {
@@ -508,7 +508,7 @@ mod tests {
 
         let app = init::routes().await.layer(axum::Extension(pool));
         let id = uuid::Uuid::parse_str("22f9c775-cce9-457a-a147-9dafbb801f61").unwrap();
-        let key = icarus_envy::environment::get_secret_key().value;
+        let key = sienvy::environment::get_secret_key().value;
 
         match token_stuff::create_service_token(&key, &id) {
             Ok((token, _expire)) => {

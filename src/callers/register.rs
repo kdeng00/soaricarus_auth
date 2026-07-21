@@ -29,7 +29,7 @@ pub mod response {
     #[derive(Deserialize, Serialize, utoipa::ToSchema)]
     pub struct Response {
         pub message: String,
-        pub data: Vec<icarus_models::user::User>,
+        pub data: Vec<simodels::user::User>,
     }
 }
 
@@ -67,7 +67,7 @@ pub async fn register_user(
     };
 
     if registration_enabled {
-        let mut user = icarus_models::user::User {
+        let mut user = simodels::user::User {
             username: payload.username.clone(),
             password: payload.password.clone(),
             email: payload.email.clone(),
@@ -91,7 +91,7 @@ pub async fn register_user(
                     )
                 } else {
                     let salt_string = hashing::generate_salt().unwrap();
-                    let mut salt = icarus_models::user::salt::Salt::default();
+                    let mut salt = simodels::user::salt::Salt::default();
                     let generated_salt = salt_string;
                     salt.salt = generated_salt.to_string();
                     salt.id = repo::salt::insert(&pool, &salt).await.unwrap();
@@ -144,7 +144,7 @@ pub async fn register_user(
 /// Checks to see if registration is enabled
 async fn is_registration_enabled() -> Result<bool, std::io::Error> {
     let key = String::from("ENABLE_REGISTRATION");
-    let var = icarus_envy::environment::get_env(&key);
+    let var = sienvy::environment::get_env(&key);
     let parsed_value = var.value.to_uppercase();
 
     if parsed_value == "TRUE" {

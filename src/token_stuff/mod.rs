@@ -8,8 +8,8 @@ use time;
 
 pub const KEY_ENV: &str = "SECRET_KEY";
 pub const MESSAGE: &str = "Something random";
-pub const ISSUER: &str = "icarus_auth";
-pub const AUDIENCE: &str = "icarus";
+pub const ISSUER: &str = "soaricarus_auth";
+pub const AUDIENCE: &str = "soaricarus";
 
 pub fn get_issued() -> time::Result<time::OffsetDateTime> {
     Ok(time::OffsetDateTime::now_utc())
@@ -24,39 +24,39 @@ pub fn create_token(
     provided_key: &String,
     id: &uuid::Uuid,
 ) -> Result<(String, i64), josekit::JoseError> {
-    let resource = icarus_models::token::TokenResource {
+    let resource = simodels::token::TokenResource {
         message: String::from(MESSAGE),
         issuer: String::from(ISSUER),
         audiences: vec![String::from(AUDIENCE)],
         id: *id,
     };
-    icarus_models::token::create_token(provided_key, &resource, time::Duration::hours(4))
+    simodels::token::create_token(provided_key, &resource, time::Duration::hours(4))
 }
 
 pub fn create_service_token(
     provided: &String,
     id: &uuid::Uuid,
 ) -> Result<(String, i64), josekit::JoseError> {
-    let resource = icarus_models::token::TokenResource {
+    let resource = simodels::token::TokenResource {
         message: String::from(SERVICE_SUBJECT),
         issuer: String::from(ISSUER),
         audiences: vec![String::from(AUDIENCE)],
         id: *id,
     };
-    icarus_models::token::create_token(provided, &resource, time::Duration::hours(1))
+    simodels::token::create_token(provided, &resource, time::Duration::hours(1))
 }
 
 pub fn create_service_refresh_token(
     key: &String,
     id: &uuid::Uuid,
 ) -> Result<(String, i64), josekit::JoseError> {
-    let resource = icarus_models::token::TokenResource {
+    let resource = simodels::token::TokenResource {
         message: String::from(SERVICE_SUBJECT),
         issuer: String::from(ISSUER),
         audiences: vec![String::from(AUDIENCE)],
         id: *id,
     };
-    icarus_models::token::create_token(key, &resource, time::Duration::hours(4))
+    simodels::token::create_token(key, &resource, time::Duration::hours(4))
 }
 
 pub fn verify_token(key: &String, token: &String) -> bool {
@@ -82,9 +82,9 @@ pub fn extract_id_from_token(key: &String, token: &String) -> Result<uuid::Uuid,
     }
 }
 
-pub const APP_TOKEN_TYPE: &str = "Icarus_App";
+pub const APP_TOKEN_TYPE: &str = "SoarIcarus_App";
 pub const APP_SUBJECT: &str = "Something random";
-pub const SERVICE_TOKEN_TYPE: &str = "Icarus_Service";
+pub const SERVICE_TOKEN_TYPE: &str = "SoarIcarus_Service";
 pub const SERVICE_SUBJECT: &str = "Service random";
 
 pub fn get_token_type(key: &String, token: &String) -> Result<String, std::io::Error> {
@@ -123,7 +123,7 @@ mod tests {
 
     #[test]
     fn test_tokenize() {
-        let special_key = icarus_envy::environment::get_secret_key().value;
+        let special_key = sienvy::environment::get_secret_key().value;
         let id = uuid::Uuid::new_v4();
         match create_token(&special_key, &id) {
             Ok((token, _duration)) => {

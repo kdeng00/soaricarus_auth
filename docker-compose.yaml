@@ -5,7 +5,7 @@ services:
     build:
       context: .
       ssh: ["default"]
-    container_name: icarus_auth
+    container_name: soaricarus_auth
     ports:
       - "8001:8001"
     env_file:
@@ -17,14 +17,15 @@ services:
 
   auth_db:
     image: postgres:18.4-alpine
-    container_name: icarus_auth_db
+    container_name: soaricarus_auth_db
     environment:
-      POSTGRES_USER: ${POSTGRES_AUTH_USER:-icarus_op}
+      POSTGRES_USER: ${POSTGRES_AUTH_USER:-soaricarus_op}
       POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_AUTH_DB:-icarus_auth_db}
+      POSTGRES_DB: ${POSTGRES_AUTH_DB:-soaricarus_auth_db}
     volumes:
       - postgres_data:/var/lib/postgresql
-    ports: []
+    ports:
+      - "5433:5432"
     healthcheck:
         # Checks if Postgres is ready to accept connections
         test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]

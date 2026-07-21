@@ -12,7 +12,7 @@ pub mod user {
     pub async fn get(
         pool: &sqlx::PgPool,
         username: &String,
-    ) -> Result<icarus_models::user::User, sqlx::Error> {
+    ) -> Result<simodels::user::User, sqlx::Error> {
         let result = sqlx::query(
             r#"
         SELECT * FROM "user" WHERE username = $1
@@ -24,7 +24,7 @@ pub mod user {
 
         match result {
             Ok(r) => match r {
-                Some(r) => Ok(icarus_models::user::User {
+                Some(r) => Ok(simodels::user::User {
                     id: r.try_get("id")?,
                     username: r.try_get("username")?,
                     password: r.try_get("password")?,
@@ -46,7 +46,7 @@ pub mod user {
 
     pub async fn update_last_login(
         pool: &sqlx::PgPool,
-        user: &icarus_models::user::User,
+        user: &simodels::user::User,
         time: &time::OffsetDateTime,
     ) -> Result<time::OffsetDateTime, sqlx::Error> {
         let result = sqlx::query(
@@ -95,7 +95,7 @@ pub mod user {
 
     pub async fn insert(
         pool: &sqlx::PgPool,
-        user: &icarus_models::user::User,
+        user: &simodels::user::User,
     ) -> Result<(uuid::Uuid, std::option::Option<time::OffsetDateTime>), sqlx::Error> {
         let row = sqlx::query(
             r#"
@@ -145,7 +145,7 @@ pub mod salt {
     pub async fn get(
         pool: &sqlx::PgPool,
         id: &uuid::Uuid,
-    ) -> Result<icarus_models::user::salt::Salt, sqlx::Error> {
+    ) -> Result<simodels::user::salt::Salt, sqlx::Error> {
         let result = sqlx::query(
             r#"
         SELECT * FROM "salt" WHERE id = $1
@@ -157,7 +157,7 @@ pub mod salt {
 
         match result {
             Ok(r) => match r {
-                Some(r) => Ok(icarus_models::user::salt::Salt {
+                Some(r) => Ok(simodels::user::salt::Salt {
                     id: r.try_get("id")?,
                     salt: r.try_get("salt")?,
                 }),
@@ -169,7 +169,7 @@ pub mod salt {
 
     pub async fn insert(
         pool: &sqlx::PgPool,
-        salt: &icarus_models::user::salt::Salt,
+        salt: &simodels::user::salt::Salt,
     ) -> Result<uuid::Uuid, sqlx::Error> {
         let row = sqlx::query(
             r#"
