@@ -1,6 +1,6 @@
 [package]
 name = "soaricarus_auth"
-version = "0.8.1"
+version = "0.8.2"
 edition = "2024"
 rust-version = "1.95"
 license = "MIT"
@@ -9,22 +9,22 @@ description = "Auth API for soaricarus"
 [dependencies]
 axum = { version = "0.8.9" }
 openssl = { version = "0.10.81", features = ["vendored"] }
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = { version = "1.0.150" }
-tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.151" }
+tokio = { version = "1.53.1", features = ["rt-multi-thread"] }
 tracing-subscriber = { version = "0.3.23" }
 tower = { version = "0.5.3", features = ["full"] }
 tower-http = { version = "0.7.0", features = ["cors"] }
 sqlx = { version = "0.9.0", features = ["postgres", "runtime-tokio", "tls-native-tls", "time", "uuid"] }
-uuid = { version = "1.23.5", features = ["v4", "serde"] }
+uuid = { version = "1.24.1", features = ["v4", "serde"] }
 argon2 = { version = "0.5.3", features = ["std"] }
-time = { version = "0.3.53", features = ["macros", "serde"] }
+time = { version = "0.3.55", features = ["macros", "serde"] }
 josekit = { version = "0.10.3" }
 utoipa = { version = "5.5.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
-simodels = { git = "ssh://git@git.kundeng.us/phoenix/simodels.git", tag = "v0.11.3-main-fe9d101bd0-111" }
-sienvy = { git = "ssh://git@git.kundeng.us/phoenix/sienvy.git", tag = "v0.8.0-main-d06c8fdf49-006" }
+simodels = { git = "ssh://git@git.kundeng.us/phoenix/simodels.git", tag = "v0.11.4" }
+sienvy = { git = "ssh://git@git.kundeng.us/phoenix/sienvy.git", tag = "v0.8.1" }
 
 [dev-dependencies]
-http-body-util = { version = "0.1.3" }
+http-body-util = { version = "0.1.5" }
 url = { version = "2.5.8" }
