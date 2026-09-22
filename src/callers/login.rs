@@ -20,6 +20,29 @@ pub mod request {
             pub access_token: String,
         }
     }
+
+    pub mod update_password {
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
+        pub struct Request {
+            pub user_id: uuid::Uuid,
+            pub username: String,
+            pub current_password: String,
+            pub updated_password: String,
+            pub confirmed_password: String,
+        }
+
+        impl Request {
+            pub fn is_valid(&self) -> bool {
+                !self.user_id.is_nil()
+                    || !self.username.is_empty()
+                    || !self.current_password.is_empty()
+                    || !self.updated_password.is_empty()
+                    || !self.confirmed_password.is_empty()
+            }
+        }
+    }
 }
 
 pub mod response {
@@ -44,6 +67,16 @@ pub mod response {
         pub struct Response {
             pub message: String,
             pub data: Vec<simodels::login_result::LoginResult>,
+        }
+    }
+
+    pub mod update_password {
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<uuid::Uuid>,
         }
     }
 }
@@ -259,6 +292,100 @@ pub mod endpoint {
         } else {
             response.message = String::from("Could not verify token");
             (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+        }
+    }
+
+    #[utoipa::path(
+        patch,
+        path = super::super::endpoints::UPDATE_PASSWORD,
+        request_body(
+            content = super::request::update_password::Request,
+            description = "Update user password",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Password updated successfully", body = super::response::update_password::Response),
+            (status = 400, description = "Invalid", body = super::response::update_password::Response),
+            (status = 500, description = "Failure", body = super::response::update_password::Response)
+        )
+    )]
+    pub async fn update_password(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::update_password::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::update_password::Response>,
+    ) {
+        let mut response = super::response::update_password::Response::default();
+
+        if !payload.is_valid() {
+            response.message = "Invalid request".to_string();
+            println!("Invalid request");
+            return (axum::http::StatusCode::BAD_REQUEST, axum::Json(response));
+        }
+
+        println!("Get User");
+        match repo::user::get(&pool, &payload.username).await {
+            Ok(user) => {
+                if hashing::verify_password(&payload.current_password, user.password.clone())
+                    .unwrap()
+                {
+                    match repo::salt::get(&pool, &user.salt_id).await {
+                        Ok(salt) => {
+                            let updated_salt_string = hashing::generate_salt().unwrap();
+                            let updated_salt = simodels::user::salt::Salt {
+                                salt: updated_salt_string.to_string(),
+                                id: salt.id,
+                            };
+                            let updated_hashed_password = hashing::hash_password(
+                                &payload.updated_password,
+                                &updated_salt_string,
+                            )
+                            .unwrap();
+
+                            match repo::salt::update_salt(&pool, &salt, &updated_salt.salt).await {
+                                Ok(_) => {
+                                    match repo::user::update_password(
+                                        &pool,
+                                        &user,
+                                        &updated_hashed_password,
+                                    )
+                                    .await
+                                    {
+                                        Ok(_) => {
+                                            response.message = "Successful".to_string();
+                                            response.data.push(user.id);
+                                            (axum::http::StatusCode::OK, axum::Json(response))
+                                        }
+                                        Err(err) => {
+                                            response.message = err.to_string();
+                                            (
+                                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                                axum::Json(response),
+                                            )
+                                        }
+                                    }
+                                }
+                                Err(err) => {
+                                    response.message = err.to_string();
+                                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                }
+                            }
+                        }
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                        }
+                    }
+                } else {
+                    response.message = "Invalid".to_string();
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                }
+            }
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
         }
     }
 }

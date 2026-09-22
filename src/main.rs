@@ -21,7 +21,7 @@ async fn main() {
 mod init {
     use axum::{
         Router,
-        routing::{get, post},
+        routing::{get, patch, post},
     };
     use utoipa::OpenApi;
 
@@ -38,11 +38,11 @@ mod init {
         paths(
             common_callers::endpoint::db_ping, common_callers::endpoint::root,
             register_caller::register_user,
-            login_endpoints::login, login_endpoints::service_login, login_endpoints::refresh_token
+            login_endpoints::login, login_endpoints::update_password, login_endpoints::service_login, login_endpoints::refresh_token
             ),
         components(schemas(common_callers::response::TestResult,
                 register_responses::Response,
-            login_responses::Response, login_responses::service_login::Response, login_responses::refresh_token::Response)),
+            login_responses::Response, login_responses::service_login::Response, login_responses::update_password::Response, login_responses::refresh_token::Response)),
         tags(
             (name = "soaricarus Auth API", description = "Auth API for soaricarus API")
             )
@@ -51,20 +51,20 @@ mod init {
 
     mod cors {
         pub async fn configure_cors() -> tower_http::cors::CorsLayer {
-            // Start building the CORS layer with common settings
             let cors = tower_http::cors::CorsLayer::new()
                 .allow_methods([
                     axum::http::Method::GET,
+                    axum::http::Method::PATCH,
                     axum::http::Method::POST,
                     axum::http::Method::PUT,
                     axum::http::Method::DELETE,
-                ]) // Specify allowed methods:cite[2]
+                ])
                 .allow_headers([
                     axum::http::header::CONTENT_TYPE,
                     axum::http::header::AUTHORIZATION,
-                ]) // Specify allowed headers:cite[2]
-                .allow_credentials(true) // If you need to send cookies or authentication headers:cite[2]
-                .max_age(std::time::Duration::from_secs(3600)); // Cache the preflight response for 1 hour:cite[2]
+                ])
+                .allow_credentials(true)
+                .max_age(std::time::Duration::from_secs(3600));
 
             // Dynamically set the allowed origin based on the environment
             match std::env::var(sienvy::keys::APP_ENV).as_deref() {
@@ -115,6 +115,10 @@ mod init {
             .route(
                 callers::endpoints::LOGIN,
                 post(callers::login::endpoint::login),
+            )
+            .route(
+                callers::endpoints::UPDATE_PASSWORD,
+                patch(callers::login::endpoint::update_password),
             )
             .route(
                 callers::endpoints::SERVICE_LOGIN,
@@ -247,6 +251,27 @@ mod tests {
         })
     }
 
+    fn get_test_login_payload(usr: &callers::login::request::Request) -> serde_json::Value {
+        json!({
+            "username": &usr.username,
+            "password": &usr.password,
+        })
+    }
+
+    pub mod test_data {
+        use serde_json::json;
+
+        pub fn get_updated_password(user_id: &uuid::Uuid) -> serde_json::Value {
+            json!({
+                "username": "somethingsss",
+                "user_id": user_id,
+                "current_password": "Raindown!",
+                "updated_password": "SpeakWithUrChest22!",
+                "confirmed_password": "SpeakWithUrChest22!"
+            })
+        }
+    }
+
     pub mod requests {
         use tower::ServiceExt; // for `call`, `oneshot`, and `ready`
 
@@ -258,6 +283,36 @@ mod tests {
             let req = axum::http::Request::builder()
                 .method(axum::http::Method::POST)
                 .uri(crate::callers::endpoints::REGISTER)
+                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                .body(axum::body::Body::from(payload.to_string()))
+                .unwrap();
+
+            app.clone().oneshot(req).await
+        }
+
+        pub async fn login(
+            app: &axum::Router,
+            usr: &super::callers::login::request::Request,
+        ) -> Result<axum::response::Response, std::convert::Infallible> {
+            let payload = super::get_test_login_payload(&usr);
+            let req = axum::http::Request::builder()
+                .method(axum::http::Method::POST)
+                .uri(crate::callers::endpoints::LOGIN)
+                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                .body(axum::body::Body::from(payload.to_string()))
+                .unwrap();
+
+            app.clone().oneshot(req).await
+        }
+
+        pub async fn update_password(
+            app: &axum::Router,
+            user_id: &uuid::Uuid,
+        ) -> Result<axum::response::Response, std::convert::Infallible> {
+            let payload = super::test_data::get_updated_password(user_id);
+            let req = axum::http::Request::builder()
+                .method(axum::http::Method::PATCH)
+                .uri(crate::callers::endpoints::UPDATE_PASSWORD)
                 .header(axum::http::header::CONTENT_TYPE, "application/json")
                 .body(axum::body::Body::from(payload.to_string()))
                 .unwrap();
@@ -394,22 +449,11 @@ mod tests {
                 );
                 assert!(returned_usr.date_created.is_some(), "Date Created is empty");
 
-                let login_payload = json!({
-                    "username": &usr.username,
-                    "password": &usr.password,
-                });
+                let mut n_usr = callers::login::request::Request::default();
+                n_usr.username = usr.username.clone();
+                n_usr.password = usr.password.clone();
 
-                match app
-                    .oneshot(
-                        Request::builder()
-                            .method(axum::http::Method::POST)
-                            .uri(callers::endpoints::LOGIN)
-                            .header(axum::http::header::CONTENT_TYPE, "application/json")
-                            .body(Body::from(login_payload.to_string()))
-                            .unwrap(),
-                    )
-                    .await
-                {
+                match requests::login(&app, &n_usr).await {
                     Ok(resp) => {
                         assert_eq!(StatusCode::OK, resp.status(), "Status is not right");
                         let body = axum::body::to_bytes(resp.into_body(), usize::MAX)
@@ -543,6 +587,98 @@ mod tests {
                     }
                     Err(err) => {
                         assert!(false, "Error: {err:?}");
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {err:?}");
+            }
+        }
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_update_password() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(e) => {
+                assert!(false, "Error: {:?}", e.to_string());
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+
+        db::init::migrations(&pool).await;
+
+        let app = init::routes().await.layer(axum::Extension(pool));
+
+        let usr = get_test_register_request();
+
+        match requests::register(&app, &usr).await {
+            Ok(resp) => {
+                assert_eq!(
+                    resp.status(),
+                    StatusCode::CREATED,
+                    "Message: {:?} {:?}",
+                    resp,
+                    usr.username
+                );
+                let body = axum::body::to_bytes(resp.into_body(), usize::MAX)
+                    .await
+                    .unwrap();
+                let parsed_body: callers::register::response::Response =
+                    serde_json::from_slice(&body).unwrap();
+                let returned_usr = &parsed_body.data[0];
+
+                assert_eq!(false, returned_usr.id.is_nil(), "Id is not populated");
+
+                assert_eq!(
+                    usr.username, returned_usr.username,
+                    "Usernames do not match"
+                );
+                assert!(returned_usr.date_created.is_some(), "Date Created is empty");
+
+                let mut n_usr = callers::login::request::Request::default();
+                n_usr.username = usr.username.clone();
+                n_usr.password = usr.password.clone();
+
+                match requests::login(&app, &n_usr).await {
+                    Ok(resp) => {
+                        assert_eq!(StatusCode::OK, resp.status(), "Status is not right");
+                        let body = axum::body::to_bytes(resp.into_body(), usize::MAX)
+                            .await
+                            .unwrap();
+                        let parsed_body: callers::login::response::Response =
+                            serde_json::from_slice(&body).unwrap();
+                        let login_result = &parsed_body.data[0];
+                        assert!(!login_result.id.is_nil(), "Id is nil");
+
+                        match requests::update_password(&app, &login_result.id).await {
+                            Ok(resp) => {
+                                assert_eq!(StatusCode::OK, resp.status(), "Status is not right");
+                                let body = axum::body::to_bytes(resp.into_body(), usize::MAX)
+                                    .await
+                                    .unwrap();
+                                let parsed_body: callers::login::response::update_password::Response =
+                                    serde_json::from_slice(&body).unwrap();
+                                let id = parsed_body.data[0];
+
+                                assert_eq!(id, login_result.id, "Ids do not match");
+                            }
+                            Err(err) => {
+                                assert!(false, "Error: {err:?}");
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err.to_string());
                     }
                 }
             }

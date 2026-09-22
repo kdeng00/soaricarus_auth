@@ -1551,8 +1551,8 @@ checksum = "3a219298ac11a56ea9a6d2120044824d6f01aeb034955e7af7bc16858527deea"
 
 [[package]]
 name = "simodels"
-version = "0.11.4"
-source = "git+ssh://git@git.kundeng.us/phoenix/simodels.git?tag=v0.11.4#d6d719741945ef7719ab1db3e0ef3c617b5bb909"
+version = "0.11.6"
+source = "git+ssh://git@git.kundeng.us/phoenix/simodels.git?tag=v0.11.6#e6ab0bcd83fd2ab3ab47298022c885132eed9945"
 dependencies = [
  "josekit",
  "rand",
@@ -1580,7 +1580,7 @@ dependencies = [
 
 [[package]]
 name = "soaricarus_auth"
-version = "0.8.2"
+version = "0.8.3"
 dependencies = [
  "argon2",
  "axum",

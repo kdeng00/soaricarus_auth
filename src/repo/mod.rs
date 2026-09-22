@@ -44,6 +44,32 @@ pub mod user {
         }
     }
 
+    pub async fn update_password(
+        pool: &sqlx::PgPool,
+        user: &simodels::user::User,
+        password: &str,
+    ) -> Result<bool, sqlx::Error> {
+        match sqlx::query(
+            r#"
+            UPDATE "user" SET password = $1 WHERE id = $2
+            "#,
+        )
+        .bind(password)
+        .bind(user.id)
+        .execute(pool)
+        .await
+        {
+            Ok(r) => {
+                if r.rows_affected() > 0 {
+                    Ok(true)
+                } else {
+                    Ok(false)
+                }
+            }
+            Err(err) => Err(err),
+        }
+    }
+
     pub async fn update_last_login(
         pool: &sqlx::PgPool,
         user: &simodels::user::User,
@@ -194,6 +220,32 @@ pub mod salt {
             Ok(result.id)
         } else {
             Err(sqlx::Error::RowNotFound)
+        }
+    }
+
+    pub async fn update_salt(
+        pool: &sqlx::PgPool,
+        salt: &simodels::user::salt::Salt,
+        updated_salt: &str,
+    ) -> Result<bool, sqlx::Error> {
+        match sqlx::query(
+            r#"
+            UPDATE "salt" SET salt = $1 WHERE id = $2
+            "#,
+        )
+        .bind(updated_salt)
+        .bind(salt.id)
+        .execute(pool)
+        .await
+        {
+            Ok(row) => {
+                if row.rows_affected() > 0 {
+                    Ok(true)
+                } else {
+                    Ok(false)
+                }
+            }
+            Err(err) => Err(err),
         }
     }
 }

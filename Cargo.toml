@@ -1,6 +1,6 @@
 [package]
 name = "soaricarus_auth"
-version = "0.8.2"
+version = "0.8.3"
 edition = "2024"
 rust-version = "1.95"
 license = "MIT"
@@ -22,7 +22,7 @@ time = { version = "0.3.55", features = ["macros", "serde"] }
 josekit = { version = "0.10.3" }
 utoipa = { version = "5.5.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
-simodels = { git = "ssh://git@git.kundeng.us/phoenix/simodels.git", tag = "v0.11.4" }
+simodels = { git = "ssh://git@git.kundeng.us/phoenix/simodels.git", tag = "v0.11.6" }
 sienvy = { git = "ssh://git@git.kundeng.us/phoenix/sienvy.git", tag = "v0.8.1" }
 
 [dev-dependencies]
