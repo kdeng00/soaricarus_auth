@@ -16,7 +16,7 @@ tracing-subscriber = { version = "0.3.23" }
 tower = { version = "0.5.3", features = ["full"] }
 tower-http = { version = "0.7.1", features = ["cors"] }
 sqlx = { version = "0.9.0", features = ["postgres", "runtime-tokio", "tls-native-tls", "time", "uuid"] }
-uuid = { version = "1.24.1", features = ["v4", "serde"] }
+uuid = { version = "1.27.0", features = ["v4", "serde"] }
 argon2 = { version = "0.5.3", features = ["std"] }
 time = { version = "0.3.55", features = ["macros", "serde"] }
 josekit = { version = "0.10.3" }
