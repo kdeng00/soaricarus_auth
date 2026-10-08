@@ -79,6 +79,16 @@ pub mod response {
             pub data: Vec<uuid::Uuid>,
         }
     }
+
+    pub mod get_user_profile {
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
+        pub struct GetUserProfileResponse {
+            pub message: String,
+            pub data: Vec<simodels::user::UserProfile>,
+        }
+    }
 }
 
 /// Module for login endpoints
@@ -385,6 +395,53 @@ pub mod endpoint {
             Err(err) => {
                 response.message = err.to_string();
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
+        }
+    }
+
+    /// Endpoint to get user profile
+    #[utoipa::path(
+        get,
+        path = super::super::endpoints::GET_USER_PROFILE,
+        params(("id" = uuid::Uuid, Path, description = "Get user profile")),
+        responses(
+            (status = 200, description = "User profile found", body = super::response::get_user_profile::GetUserProfileResponse),
+            (status = 404, description = "Song not found", body = super::response::get_user_profile::GetUserProfileResponse),
+            (status = 400, description = "Error downloading song", body = super::response::get_user_profile::GetUserProfileResponse),
+        )
+    )]
+    pub async fn get_user_profile(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::get_user_profile::GetUserProfileResponse>,
+    ) {
+        let mut response = super::response::get_user_profile::GetUserProfileResponse::default();
+        if id.is_nil() {
+            response.message = "Invalid request".to_string();
+            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+        } else {
+            match repo::user::get_with_id(&pool, &id).await {
+                Ok(user) => {
+                    let user_profile = simodels::user::UserProfile {
+                        firstname: user.firstname,
+                        lastname: user.lastname,
+                        username: user.username,
+                        email: user.email,
+                    };
+
+                    response.message = "SUCCESSFUL".to_string();
+                    response.data.push(user_profile);
+                    (axum::http::StatusCode::OK, axum::Json(response))
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (
+                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        axum::Json(response),
+                    )
+                }
             }
         }
     }

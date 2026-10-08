@@ -1,5 +1,3 @@
-version: '3.8' # Use a recent version
-
 services:
   auth_api:
     build:
@@ -16,7 +14,7 @@ services:
     restart: unless-stopped
 
   auth_db:
-    image: postgres:18.4-alpine
+    image: postgres:18.6-alpine
     container_name: soaricarus_auth_db
     environment:
       POSTGRES_USER: ${POSTGRES_AUTH_USER:-soaricarus_op}

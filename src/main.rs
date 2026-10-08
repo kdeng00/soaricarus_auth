@@ -38,11 +38,11 @@ mod init {
         paths(
             common_callers::endpoint::db_ping, common_callers::endpoint::root,
             register_caller::register_user,
-            login_endpoints::login, login_endpoints::update_password, login_endpoints::service_login, login_endpoints::refresh_token
+            login_endpoints::login, login_endpoints::update_password, login_endpoints::service_login, login_endpoints::refresh_token, login_endpoints::get_user_profile,
             ),
         components(schemas(common_callers::response::TestResult,
                 register_responses::Response,
-            login_responses::Response, login_responses::service_login::Response, login_responses::update_password::Response, login_responses::refresh_token::Response)),
+            login_responses::Response, login_responses::service_login::Response, login_responses::update_password::Response, login_responses::refresh_token::Response, login_responses::get_user_profile::GetUserProfileResponse)),
         tags(
             (name = "soaricarus Auth API", description = "Auth API for soaricarus API")
             )
@@ -127,6 +127,10 @@ mod init {
             .route(
                 callers::endpoints::REFRESH_TOKEN,
                 post(callers::login::endpoint::refresh_token),
+            )
+            .route(
+                callers::endpoints::GET_USER_PROFILE,
+                get(callers::login::endpoint::get_user_profile),
             )
             .layer(cors::configure_cors().await)
     }

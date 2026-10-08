@@ -24,24 +24,86 @@ pub mod user {
 
         match result {
             Ok(r) => match r {
-                Some(r) => Ok(simodels::user::User {
-                    id: r.try_get("id")?,
-                    username: r.try_get("username")?,
-                    password: r.try_get("password")?,
-                    email: r.try_get("email")?,
-                    email_verified: r.try_get("email_verified")?,
-                    phone: r.try_get("phone")?,
-                    salt_id: r.try_get("salt_id")?,
-                    firstname: r.try_get("firstname")?,
-                    lastname: r.try_get("lastname")?,
-                    date_created: r.try_get("date_created")?,
-                    last_login: r.try_get("last_login")?,
-                    status: r.try_get("status")?,
-                }),
+                Some(r) => parse_row(&r).await,
                 None => Err(sqlx::Error::RowNotFound),
             },
             Err(e) => Err(e),
         }
+    }
+
+    pub async fn get_with_id(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<simodels::user::User, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+        SELECT * FROM "user" WHERE id = $1
+        "#,
+        )
+        .bind(id)
+        .fetch_optional(pool)
+        .await;
+
+        match result {
+            Ok(r) => match r {
+                Some(roww) => parse_row(&roww).await,
+                None => Err(sqlx::Error::RowNotFound),
+            },
+            Err(e) => Err(e),
+        }
+    }
+
+    async fn parse_row(row: &sqlx::postgres::PgRow) -> Result<simodels::user::User, sqlx::Error> {
+        Ok(simodels::user::User {
+            id: row
+                .try_get("id")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            username: row
+                .try_get("username")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            password: row
+                .try_get("password")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            email: row
+                .try_get("email")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            phone: row
+                .try_get("phone")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            firstname: row
+                .try_get("firstname")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            lastname: row
+                .try_get("lastname")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            email_verified: row
+                .try_get("email_verified")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            date_created: row
+                .try_get("date_created")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            status: row
+                .try_get("status")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            last_login: row
+                .try_get("last_login")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            salt_id: row
+                .try_get("salt_id")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+        })
     }
 
     pub async fn update_password(
