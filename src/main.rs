@@ -323,6 +323,23 @@ mod tests {
 
             app.clone().oneshot(req).await
         }
+
+        pub async fn get_user_profile(
+            app: &axum::Router,
+            user_id: &uuid::Uuid,
+        ) -> Result<axum::response::Response, std::convert::Infallible> {
+            let raw_uri = String::from(crate::callers::endpoints::GET_USER_PROFILE);
+            let end_index = raw_uri.len() - 4;
+
+            let uri = format!("{}{user_id}", (&raw_uri[..end_index]).to_string());
+            let req = axum::http::Request::builder()
+                .method(axum::http::Method::GET)
+                .uri(uri)
+                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                .body(axum::body::Body::empty())
+                .unwrap();
+            app.clone().oneshot(req).await
+        }
     }
 
     #[tokio::test]
@@ -690,6 +707,87 @@ mod tests {
                 assert!(false, "Error: {err:?}");
             }
         }
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_get_user_profile() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(e) => {
+                assert!(false, "Error: {:?}", e.to_string());
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+
+        db::init::migrations(&pool).await;
+
+        let app = init::routes().await.layer(axum::Extension(pool));
+
+        let usr = get_test_register_request();
+
+        let response = requests::register(&app, &usr).await;
+
+        match response {
+            Ok(resp) => {
+                assert_eq!(
+                    resp.status(),
+                    StatusCode::CREATED,
+                    "Message: {:?} {:?}",
+                    resp,
+                    usr.username
+                );
+                let body = axum::body::to_bytes(resp.into_body(), usize::MAX)
+                    .await
+                    .unwrap();
+                let parsed_body: callers::register::response::Response =
+                    serde_json::from_slice(&body).unwrap();
+                let returned_usr = &parsed_body.data[0];
+
+                let user_id = returned_usr.id;
+                assert_eq!(false, user_id.is_nil(), "Id is not populated");
+
+                assert_eq!(
+                    usr.username, returned_usr.username,
+                    "Usernames do not match"
+                );
+                assert!(returned_usr.date_created.is_some(), "Date Created is empty");
+
+                let mut n_usr = callers::login::request::Request::default();
+                n_usr.username = usr.username.clone();
+                n_usr.password = usr.password.clone();
+
+                match requests::get_user_profile(&app, &user_id).await {
+                    Ok(resp) => {
+                        assert_eq!(StatusCode::OK, resp.status(), "Status is not right");
+                        let body = axum::body::to_bytes(resp.into_body(), usize::MAX)
+                            .await
+                            .unwrap();
+                        let parsed_body: callers::login::response::get_user_profile::GetUserProfileResponse =
+                            serde_json::from_slice(&body).unwrap();
+                        let user_profile = &parsed_body.data[0];
+                        assert!(
+                            !user_profile.username.is_empty(),
+                            "Username should not be null is nil"
+                        );
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err.to_string());
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err.to_string());
+            }
+        };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
