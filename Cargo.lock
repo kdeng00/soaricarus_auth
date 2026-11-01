@@ -1535,7 +1535,7 @@ dependencies = [
 
 [[package]]
 name = "soaricarus_auth"
-version = "0.8.5"
+version = "0.8.6"
 dependencies = [
  "argon2",
  "axum",
