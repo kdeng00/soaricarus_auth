@@ -1,6 +1,6 @@
 [package]
 name = "soaricarus_auth"
-version = "0.8.6"
+version = "0.8.7"
 edition = "2024"
 rust-version = "1.95"
 license = "MIT"
@@ -17,11 +17,12 @@ tower = { version = "0.5.3", features = ["full"] }
 tower-http = { version = "0.7.1", features = ["cors"] }
 sqlx = { version = "0.9.0", features = ["postgres", "runtime-tokio", "tls-native-tls", "time", "uuid"] }
 uuid = { version = "1.29.0", features = ["v4", "serde"] }
-argon2 = { version = "0.5.3", features = ["std"] }
+argon2 = { version = "0.6.0", features = ["alloc", "getrandom", "rand_core"] }
 time = { version = "0.3.55", features = ["macros", "serde"] }
 josekit = { version = "0.10.3" }
 utoipa = { version = "6.0.0", features = ["axum_extras", "uuid", "time"] }
 utoipa-swagger-ui = { version = "10.0.2", features = ["axum"] }
+rand = { version = "0.10.3" }
 simodels = { git = "ssh://git@git.kundeng.us/phoenix/simodels.git", tag = "v0.11.7" }
 sienvy = { git = "ssh://git@git.kundeng.us/phoenix/sienvy.git", tag = "v0.8.2" }
 

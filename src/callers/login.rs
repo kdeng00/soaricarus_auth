@@ -344,7 +344,7 @@ pub mod endpoint {
                         Ok(salt) => {
                             let updated_salt_string = hashing::generate_salt().unwrap();
                             let updated_salt = simodels::user::salt::Salt {
-                                salt: updated_salt_string.to_string(),
+                                salt: updated_salt_string.to_string().clone(),
                                 id: salt.id,
                             };
                             let updated_hashed_password = hashing::hash_password(

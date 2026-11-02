@@ -93,7 +93,7 @@ pub async fn register_user(
                     let salt_string = hashing::generate_salt().unwrap();
                     let mut salt = simodels::user::salt::Salt::default();
                     let generated_salt = salt_string;
-                    salt.salt = generated_salt.to_string();
+                    salt.salt = generated_salt.to_string().clone();
                     salt.id = repo::salt::insert(&pool, &salt).await.unwrap();
                     user.salt_id = salt.id;
                     let hashed_password =
