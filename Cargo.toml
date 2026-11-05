@@ -1,6 +1,6 @@
 [package]
 name = "soaricarus_auth"
-version = "0.8.7"
+version = "0.8.8"
 edition = "2024"
 rust-version = "1.95"
 license = "MIT"
@@ -8,7 +8,7 @@ description = "Auth API for soaricarus"
 
 [dependencies]
 axum = { version = "0.8.9" }
-openssl = { version = "0.10.81", features = ["vendored"] }
+openssl = { version = "0.10.82", features = ["vendored"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { version = "1.0.154" }
 tokio = { version = "1.54.1", features = ["rt-multi-thread"] }
@@ -23,8 +23,8 @@ josekit = { version = "0.10.3" }
 utoipa = { version = "6.0.0", features = ["axum_extras", "uuid", "time"] }
 utoipa-swagger-ui = { version = "10.0.2", features = ["axum"] }
 rand = { version = "0.10.3" }
-simodels = { git = "ssh://git@git.kundeng.us/phoenix/simodels.git", tag = "v0.11.7" }
-sienvy = { git = "ssh://git@git.kundeng.us/phoenix/sienvy.git", tag = "v0.8.2" }
+simodels = { git = "ssh://git@git.kundeng.us/phoenix/simodels.git", tag = "v0.11.9", features = ["auth"] }
+sienvy = { git = "ssh://git@git.kundeng.us/phoenix/sienvy.git", tag = "v0.8.3" }
 
 [dev-dependencies]
 http-body-util = { version = "0.1.5" }

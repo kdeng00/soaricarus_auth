@@ -151,7 +151,7 @@ pub mod endpoint {
                                     id: user.id,
                                     username: user.username.clone(),
                                     token: token_literal,
-                                    token_type: String::from(simodels::token::TOKEN_TYPE),
+                                    token_type: simodels::constants::token::TOKEN_TYPE.to_string(),
                                     expiration: duration,
                                 }],
                             }),
@@ -203,7 +203,7 @@ pub mod endpoint {
                         id,
                         username,
                         token: token_literal,
-                        token_type: String::from(simodels::token::TOKEN_TYPE),
+                        token_type: simodels::constants::token::TOKEN_TYPE.to_string(),
                         expiration: duration,
                     };
 
@@ -262,7 +262,8 @@ pub mod endpoint {
                                         id,
                                         token: access_token,
                                         expiration: exp_dur,
-                                        token_type: String::from(simodels::token::TOKEN_TYPE),
+                                        token_type: simodels::constants::token::TOKEN_TYPE
+                                            .to_string(),
                                         username,
                                     };
                                     response.message = String::from("Successful");
